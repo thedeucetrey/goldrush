@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pay Dirt — 1849 Gold Rush MMO (Prototype)</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="app-header">
+    <img src="assets/pickaxe.svg" alt="Pickaxe" class="logo"/>
+    <h1>Pay Dirt — 1849 California Gold Rush</h1>
+    <div class="flex-spacer"></div>
+    <button id="saveBtn" title="Save to browser">Save</button>
+    <button id="resetBtn" title="Wipe local save">Reset</button>
+    <button id="syncBtn" disabled title="Coming soon: Supabase realtime sync">Sync</button>
+    <span id="status" aria-live="polite"></span>
+  </header>
+
+  <main class="app-main">
+    <aside class="sidebar">
+      <section class="card">
+        <h2>Character</h2>
+        <div id="charInfo"></div>
+        <div class="row gap">
+          <button id="campBtn" class="primary">Camp &amp; Rest</button>
+          <button id="townBtn">Go to Town</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Inventory</h2>
+        <div id="inv"></div>
+      </section>
+
+      <section class="card">
+        <h2>Skills</h2>
+        <div id="skills"></div>
+      </section>
+
+      <section class="card">
+        <h2>Market</h2>
+        <div id="market"></div>
+      </section>
+
+      <section class="card">
+        <h2>Businesses</h2>
+        <div id="biz"></div>
+      </section>
+    </aside>
+
+    <section class="map-pane">
+      <div class="map-toolbar">
+        <span><strong>Map:</strong> Sierra Foothills (Prototype)</span>
+        <label>Zoom
+          <input type="range" id="zoom" min="1" max="2" step="0.25" value="1"/>
+        </label>
+      </div>
+
+      <div id="map" role="grid" aria-label="Prospecting map"></div>
+
+      <section class="card tile-card" id="tileCard" hidden>
+        <h2>Tile</h2>
+        <div id="tileInfo"></div>
+        <div class="row gap">
+          <button id="prospectBtn" class="primary">Prospect</button>
+          <button id="panBtn">Pan</button>
+          <button id="sluiceBtn">Sluice</button>
+          <button id="claimBtn">Stake Claim</button>
+        </div>
+        <div id="actionLog" class="log"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>Prototype: local single-player with deterministic world gen. Multiplayer &amp; realtime economy planned via Supabase. MIT License.</small>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
 
