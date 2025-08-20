@@ -1,21 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pay Dirt — 1849 Gold Rush MMO (Prototype)</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pay Dirt — 1849 California Gold Rush</title>
 
-  <!-- Leaflet + IIIF for deep-zoom 1849 map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet + IIIF (deep-zoom historical map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <script src="https://unpkg.com/leaflet-iiif@2.2.3/leaflet-iiif.min.js"></script>
 </head>
 <body>
+  <!-- Header -->
   <header class="app-header">
-    <img src="assets/pickaxe.svg" alt="Pickaxe" class="logo"/>
+    <img src="assets/pickaxe.svg" alt="Pickaxe" class="logo" />
     <h1>Pay Dirt — 1849 California Gold Rush</h1>
     <div class="flex-spacer"></div>
     <button id="saveBtn" title="Save to browser">Save</button>
@@ -24,8 +34,11 @@
     <span id="status" aria-live="polite"></span>
   </header>
 
+  <!-- Main layout -->
   <main class="app-main">
+    <!-- Left sidebar -->
     <aside class="sidebar">
+      <!-- Character -->
       <section class="card">
         <h2>Character</h2>
         <div id="charInfo"></div>
@@ -35,60 +48,80 @@
         </div>
       </section>
 
+      <!-- Inventory -->
       <section class="card">
         <h2>Inventory</h2>
         <div id="inv"></div>
       </section>
 
+      <!-- Skills -->
       <section class="card">
         <h2>Skills</h2>
         <div id="skills"></div>
       </section>
 
+      <!-- Market -->
       <section class="card">
         <h2>Market</h2>
         <div id="market"></div>
       </section>
 
+      <!-- Businesses -->
       <section class="card">
         <h2>Businesses</h2>
         <div id="biz"></div>
       </section>
     </aside>
 
+    <!-- Map / gameplay pane -->
     <section class="map-pane">
       <div class="map-toolbar">
         <span><strong>Map:</strong></span>
         <div class="tabs">
-          <button id="modeGrid" class="tab active">Grid</button>
-          <button id="modeHist" class="tab">1849 Map (Hi-Res)</button>
+          <button id="modeGrid" class="tab active" type="button">Grid</button>
+          <button id="modeHist" class="tab" type="button">1849 Map (Hi-Res)</button>
         </div>
-        <label>Zoom
-          <input type="range" id="zoom" min="1" max="2" step="0.25" value="1"/>
+
+        <label style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="togglePOI" checked />
+          Show POIs
+        </label>
+
+        <label style="display:flex; align-items:center; gap:6px;">
+          Zoom
+          <input type="range" id="zoom" min="1" max="2" step="0.25" value="1" />
         </label>
       </div>
 
+      <!-- Grid map -->
       <div id="map" role="grid" aria-label="Prospecting map"></div>
+
+      <!-- Hi-res historical map -->
       <div id="leafletMap" class="leaflet-shell" hidden></div>
 
+      <!-- Tile details -->
       <section class="card tile-card" id="tileCard" hidden>
         <h2>Tile</h2>
         <div id="tileInfo"></div>
-        <div class="row gap">
-          <button id="prospectBtn" class="primary">Prospect</button>
-          <button id="panBtn">Pan</button>
-          <button id="sluiceBtn">Sluice</button>
-          <button id="claimBtn">Stake Claim</button>
+        <div class="row gap" style="margin-top:8px;">
+          <button id="prospectBtn" class="primary" type="button">Prospect</button>
+          <button id="panBtn" type="button">Pan</button>
+          <button id="sluiceBtn" type="button">Sluice</button>
+          <button id="claimBtn" type="button">Stake Claim</button>
         </div>
-        <div id="actionLog" class="log"></div>
+        <div id="actionLog" class="log" aria-live="polite"></div>
       </section>
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="app-footer">
-    <small>Prototype: local single-player with deterministic world gen. Multiplayer &amp; realtime economy planned via Supabase. MIT License.</small>
+    <small>
+      Prototype: local single-player with deterministic world gen. Multiplayer &amp; realtime economy planned via Supabase. MIT License.
+    </small>
   </footer>
 
+  <!-- App script -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
