@@ -1,5 +1,4 @@
 // Pay Dirt — v3: Leaflet IIIF deep-zoom for 1849 map.
-// Uses LoC IIIF Presentation manifest to locate the Image service.
 
 const WORLD = { width: 64, height: 48, seed: 1849 };
 const EQUIPMENT = {
@@ -14,7 +13,7 @@ const EQUIPMENT = {
 // LoC IIIF presentation manifest for Wyld (1849)
 const HIST_MANIFEST_URL = "https://www.loc.gov/item/99446205/manifest.json";
 
-// --- Utilities: seeded RNG (xmur3 + mulberry32) ---
+// --- Utilities: seeded RNG ---
 function xmur3(str){ for(var i=0,h=1779033703^str.length;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19 } return function(){ h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0 } }
 function mulberry32(a){ return function(){ var t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15, t|1); t^=t+Math.imul(t^t>>>7, t|61); return ((t^t>>>14)>>>0)/4294967296 } }
 const hash = xmur3(String(WORLD.seed));
@@ -176,9 +175,7 @@ function updateStorePanel(){
       <button id="buyForStore" ${player.money < 20 ? 'disabled':''}>Buy pan wholesale ($20)</button>
       <button id="simulateDemand">Simulate NPC demand</button>
     </div>`;
-  el("#buyForStore")?.addEventListener("click", ()=>{
-    if (player.money >= 20){ player.money -= 20; s.stock.pan = (s.stock.pan||0)+1; renderAll(); }
-  });
+  el("#buyForStore")?.addEventListener("click", ()=>{ if (player.money >= 20){ player.money -= 20; s.stock.pan = (s.stock.pan||0)+1; renderAll(); } });
   el("#simulateDemand")?.addEventListener("click", simulateDemand);
 }
 
@@ -255,7 +252,6 @@ let leaflet = { map:null, iiif:null, playerMarker:null, imgW:0, imgH:0 };
 async function initLeaflet(){
   if (leaflet.map) return;
   const map = L.map("leafletMap", { zoomSnap: 0.25 });
-  // Pull the IIIF image service from the manifest
   const manifest = await fetch(HIST_MANIFEST_URL).then(r=>r.json());
   const canvas = manifest.sequences?.[0]?.canvases?.[0];
   const serviceId = canvas.images?.[0]?.resource?.service?.['@id'];
@@ -266,18 +262,13 @@ async function initLeaflet(){
   const layer = L.tileLayer.iiif(infoUrl, { fitBounds: true }).addTo(map);
   leaflet = { map, iiif:layer, playerMarker:null, imgW:width, imgH:height };
 
-  // click -> grid coords
   map.on("click", (e)=>{
-    // e.latlng is in CRS set by leaflet-iiif; unproject to pixel coords via layer
-    const pt = map.project(e.latlng, map.getMaxZoom()); // high-res mercator pixels
-    // Convert to image pixel space using layer's transformation
-    // leaflet-iiif exposes _scaleAtResolution; but simpler: use layer.coordsToLatLng/LatLngToCoords is not public.
-    // Approximation: use layer.x / y scale via image size and projected bounds.
-    const b = layer._imageSizes[layer._imageSizes.length-1]; // max level width/height
-    const px = pt.x / (map.project(layer._imageBounds.getNorthEast(), map.getMaxZoom()).x - map.project(layer._imageBounds.getSouthWest(), map.getMaxZoom()).x) * b.x;
-    const py = pt.y / (map.project(layer._imageBounds.getSouthWest(), map.getMaxZoom()).y - map.project(layer._imageBounds.getNorthEast(), map.getMaxZoom()).y) * b.y;
-    const gx = Math.floor( clamp(px / leaflet.imgW * WORLD.width, 0, WORLD.width-1) );
-    const gy = Math.floor( clamp(py / leaflet.imgH * WORLD.height, 0, WORLD.height-1) );
+    const b = layer._bounds, ne=b.getNorthEast(), sw=b.getSouthWest();
+    const latSpan = ne.lat - sw.lat, lngSpan = ne.lng - sw.lng;
+    const lat = (e.latlng.lat - sw.lat) / latSpan;
+    const lng = (e.latlng.lng - sw.lng) / lngSpan;
+    const gx = Math.floor( clamp(lng * WORLD.width, 0, WORLD.width-1) );
+    const gy = Math.floor( clamp(lat * WORLD.height, 0, WORLD.height-1) );
     selectTile(gx,gy);
     renderTile();
   });
@@ -286,11 +277,9 @@ async function initLeaflet(){
 }
 function updateLeafletPlayer(){
   if (!leaflet.map || !leaflet.iiif) return;
-  const latlngBounds = leaflet.iiif._bounds;
-  const ne = latlngBounds.getNorthEast(), sw = latlngBounds.getSouthWest();
-  const latSpan = ne.lat - sw.lat, lngSpan = ne.lng - sw.lng;
-  const lat = sw.lat + (player.pos.y + 0.5)/WORLD.height * latSpan;
-  const lng = sw.lng + (player.pos.x + 0.5)/WORLD.width * lngSpan;
+  const b = leaflet.iiif._bounds, ne=b.getNorthEast(), sw=b.getSouthWest();
+  const lat = sw.lat + (player.pos.y + 0.5)/WORLD.height * (ne.lat - sw.lat);
+  const lng = sw.lng + (player.pos.x + 0.5)/WORLD.width * (ne.lng - sw.lng);
   if (!leaflet.playerMarker){
     leaflet.playerMarker = L.circleMarker([lat,lng], {radius: 5, weight: 2}).addTo(leaflet.map);
   } else {
@@ -309,8 +298,8 @@ function renderAll(){ renderMap(); renderChar(); renderInv(); renderSkills(); re
 
 document.getElementById("saveBtn").addEventListener("click", save);
 document.getElementById("resetBtn").addEventListener("click", reset);
-document.getElementById("campBtn").addEventListener("click", camp);
-document.getElementById("townBtn").addEventListener("click", ()=>{ /* nearest town in grid */ renderMap(); updateLeafletPlayer(); });
+document.getElementById("campBtn").addEventListener("click", ()=>{ const gain = Math.min(player.maxStamina - player.stamina, 40); player.stamina += gain; gainXP("fitness", 2); status(`Restored ${gain} stamina.`); renderChar(); });
+document.getElementById("townBtn").addEventListener("click", ()=>{ renderMap(); updateLeafletPlayer(); });
 document.getElementById("prospectBtn").addEventListener("click", prospect);
 document.getElementById("panBtn").addEventListener("click", pan);
 document.getElementById("sluiceBtn").addEventListener("click", sluice);
