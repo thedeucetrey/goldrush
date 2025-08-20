@@ -16,7 +16,11 @@ button:disabled { opacity: .6; cursor: not-allowed; }
 .row.gap { gap: 8px; flex-wrap: wrap; }
 .map-pane { display: flex; flex-direction: column; gap: 12px; }
 .map-toolbar { display: flex; align-items: center; gap: 16px; padding: 8px 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+.tabs { display:flex; gap:8px; }
+.tab { border-radius: 999px; padding: 6px 10px; }
+.tab.active { background: #111827; color: #fff; border-color: #111827; }
 #map { background: #e8eef2; border: 1px solid #d1d5db; border-radius: 12px; padding: 8px; display: grid; grid-template-columns: repeat(64, 1fr); grid-auto-rows: 14px; gap: 2px; overflow: auto; max-height: 65vh; }
+#leafletMap.leaflet-shell { height: 65vh; background: #e8eef2; border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; }
 .tile { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #d1d5db; position: relative; }
 .tile.mountain { background: #ced4da; }
 .tile.river { background: #93c5fd; }
@@ -36,5 +40,5 @@ button:disabled { opacity: .6; cursor: not-allowed; }
 .priceDown { color: var(--bad); }
 @media (max-width: 1000px) {
   .app-main { grid-template-columns: 1fr; }
-  #map { max-height: 50vh; }
+  #map, #leafletMap.leaflet-shell { max-height: 50vh; }
 }
